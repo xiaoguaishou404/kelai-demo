@@ -57,6 +57,7 @@ export interface JobRole {
   companyTypes: string[];
   dimensions: DimensionId[];
   skills: string[];
+  trains: string[];
 }
 
 export interface Hop {
@@ -111,6 +112,7 @@ export interface Challenge {
   scene: string;
   quote: string;
   summary: string;
+  reading: string[];
   dimensions: DimensionId[];
   core: boolean;
   published: boolean;
@@ -157,6 +159,7 @@ export interface Review {
   tags: string[];
   comment: string;
   defenseNote: string;
+  defenseChecks: { question: string; verdict: "clear" | "unclear" }[];
   reason: string;
 }
 
@@ -186,6 +189,13 @@ export interface DesktopSession {
   status: "active" | "closed";
 }
 
+export interface ClassNotice {
+  id: string;
+  at: string;
+  authorId: string;
+  body: string;
+}
+
 export interface ClassRoom {
   id: string;
   name: string;
@@ -195,11 +205,13 @@ export interface ClassRoom {
   studentIds: string[];
   requiredChallengeIds: string[];
   optionalChallengeIds: string[];
+  notices: ClassNotice[];
 }
 
 export interface DesktopProduct {
   product: string;
   version: string;
+  provider: string;
   policy: string;
 }
 
@@ -217,7 +229,7 @@ export interface Database {
   desktop: DesktopProduct;
 }
 
-export const SCHEMA_VERSION = 1;
+export const SCHEMA_VERSION = 3;
 export const DEMO_PASSWORD = "kelai-2026";
 export const INITIAL_DESKTOP_MINUTES = 45;
 export const EXTEND_DESKTOP_MINUTES = 30;

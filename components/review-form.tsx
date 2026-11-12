@@ -9,13 +9,16 @@ import { REVIEW_TAGS, type DimensionId } from "@/lib/types";
 export function ReviewForm({
   submissionId,
   dimensions,
+  questions,
 }: {
   submissionId: string;
   dimensions: DimensionId[];
+  questions: string[];
 }) {
   const router = useRouter();
   const [scores, setScores] = useState<Partial<Record<DimensionId, number>>>({});
   const [tags, setTags] = useState<string[]>([]);
+  const [checks, setChecks] = useState<Record<string, "clear" | "unclear">>({});
   const [comment, setComment] = useState("");
   const [defenseNote, setDefenseNote] = useState("");
   const [reason, setReason] = useState("");
@@ -25,7 +28,8 @@ export function ReviewForm({
   function send(decision: "accept" | "return") {
     setError("");
     startTransition(async () => {
-      const result = await reviewSubmission({ submissionId, decision, scores, tags, comment, defenseNote, reason });
+      const defenseChecks = questions.map((question) => ({ question, verdict: checks[question] })).filter((item): item is { question: string; verdict: "clear" | "unclear" } => Boolean(item.verdict));
+      const result = await reviewSubmission({ submissionId, decision, scores, tags, comment, defenseNote, defenseChecks, reason });
       if (!result.ok) setError(result.error ?? "没有提交验收");
       else router.refresh();
     });
@@ -59,6 +63,16 @@ export function ReviewForm({
           >
             {tag}
           </button>
+        ))}
+      </div>
+      <div className="stack">
+        <h3>答辩核对</h3>
+        {questions.map((question) => (
+          <div key={question} className="row">
+            <span>{question}</span>
+            <button type="button" className={checks[question] === "clear" ? "choice on" : "choice"} onClick={() => setChecks((current) => ({ ...current, [question]: "clear" }))}>讲清了</button>
+            <button type="button" className={checks[question] === "unclear" ? "choice on" : "choice"} onClick={() => setChecks((current) => ({ ...current, [question]: "unclear" }))}>没讲清</button>
+          </div>
         ))}
       </div>
       <label className="field">评语<textarea value={comment} onChange={(event) => setComment(event.target.value)} /></label>

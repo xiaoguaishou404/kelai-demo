@@ -54,6 +54,13 @@ export default async function ReviewPage({ params }: { params: Promise<{ id: str
           <p>{Object.entries(submission.review.scores).map(([key, score]) => `${dimensionLabel(key as never)} ${score}`).join(" · ")}</p>
           {submission.review.reason ? <p>退回说明：{submission.review.reason}</p> : null}
           {submission.review.defenseNote ? <p>答辩：{submission.review.defenseNote}</p> : null}
+          {(submission.review.defenseChecks ?? []).length > 0 ? (
+            <ul>
+              {submission.review.defenseChecks.map((item) => (
+                <li key={item.question}>{item.question}：{item.verdict === "clear" ? "讲清了" : "没讲清"}</li>
+              ))}
+            </ul>
+          ) : null}
         </section>
       ) : null}
       {submission.history.length > 0 ? (
@@ -64,7 +71,7 @@ export default async function ReviewPage({ params }: { params: Promise<{ id: str
       ) : null}
       {submission.status === "submitted" ? (
         <div style={{ marginTop: 14 }}>
-          <ReviewForm submissionId={submission.id} dimensions={challenge.dimensions} />
+          <ReviewForm submissionId={submission.id} dimensions={challenge.dimensions} questions={challenge.teacher.defenseQuestions} />
         </div>
       ) : null}
     </>

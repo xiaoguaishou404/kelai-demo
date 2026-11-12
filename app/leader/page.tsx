@@ -34,6 +34,7 @@ export default async function LeaderPage() {
         <section key={item.room.id} className="card" style={{ marginTop: 14 }}>
           <h2>{item.room.term} {item.room.name}</h2>
           <p>教师 {item.teacherName} · {item.studentCount} 人 · 案卷通过率 {item.passRate}% · 机时 {item.desktopMinutes} 分钟</p>
+          <p className="narrative">{item.narrative}</p>
           <p>最弱能力块：{dimensionLabel(item.weakest)}。退回卡点：{item.hotspot}</p>
           <Radar axes={DIMENSIONS.map((dimension) => ({ label: dimension.label.slice(0, 4), value: item.averages[dimension.id] }))} />
           <table>

@@ -145,6 +145,37 @@ textarea { min-height: 88px; resize: vertical; }
 .matrix td:first-child, .matrix th:first-child { text-align: left; }
 :focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
 
+.hero, .dossier, .notice, .handoff, .narrative {
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: white;
+}
+.hero {
+  display: grid;
+  gap: 6px;
+  margin: 0 0 14px;
+  padding: 22px 24px;
+  text-decoration: none;
+  background:
+    linear-gradient(120deg, rgba(15, 107, 92, 0.08), transparent 42%),
+    white;
+}
+.hero strong { font-size: 26px; letter-spacing: -0.03em; }
+.notice { margin-bottom: 14px; padding: 14px 16px; background: #f8f4ea; }
+.dossier { margin-bottom: 14px; padding: 16px 18px; }
+.stage-rail { display: flex; gap: 8px; flex-wrap: wrap; margin: 0; padding: 0; list-style: none; }
+.stage-rail li { display: flex; gap: 6px; align-items: center; background: white; border: 1px solid var(--line); border-radius: 999px; padding: 4px 10px 4px 4px; }
+.stage-rail span { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; background: var(--deep); color: white; font-size: 12px; }
+.handoff { display: grid; gap: 12px; padding: 18px; background: var(--deep); color: #edf7f3; }
+.handoff .kicker, .handoff p { color: #d5ebe4; }
+.handoff-meter b { font-size: 36px; }
+.handoff .btn.ghost, .handoff .btn:disabled { color: #c5ddd4; border: 1px solid #3e675d; background: transparent; }
+.role-groups { display: grid; gap: 14px; }
+.role-groups h3 { margin: 0; font-size: 13px; color: var(--muted); }
+.narrative { padding: 12px 14px; background: #f4faf7; }
+.case-link h2 { margin-top: 8px; }
+.login-copy p { max-width: 36rem; line-height: 1.7; }
+
 @media (max-width: 900px) {
   .shell { grid-template-columns: 1fr; }
   .nav { position: sticky; height: auto; flex-direction: row; overflow: auto; align-items: center; }

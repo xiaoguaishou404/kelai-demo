@@ -76,6 +76,10 @@ export function createSeed(): Database {
       scene: "临江商超下午高峰，收银偶发转圈。网管说带宽没用满，库也没有告警。",
       quote: "下午两点开始，收银台偶发转圈。带宽没用满，数据库也没报警，你们别一上来就让我加带宽。",
       summary: "用脱敏收银流量判断慢点，并讲清第三方支付哪里看不见。",
+      reading: [
+        "样本来自临江商超 14:02–14:20 的旁路镜像，已经脱敏。你看到的是各跳时延，不是一份逐步点击手册。",
+        "客户拒绝「先加带宽」。你要先排除数据库和接入拥塞，再决定慢点落在哪一跳，并写明支付网关为什么不能编一个毫秒数。",
+      ],
       dimensions: ["listen", "topology", "fault", "report"],
       core: true,
       published: true,
@@ -155,6 +159,10 @@ export function createSeed(): Database {
       scene: "同一分钟里冒出几十条安全与设备告警，值班同学不知道先看哪条。",
       quote: "告警刷屏了。扫描、CPU、打印机、支付成功率都在响，我总不能每条都开案。",
       summary: "在一批同时段告警里分出深查、噪音和该关联的事件。",
+      reading: [
+        "14:06 这一分钟里，安全规则、设备监控和业务指标同时出声。条数多不代表都要开案。",
+        "先找会让收银失败的黄金指标，再把同一件事的重复计数收起来。打印机和基线内波动可以放下。",
+      ],
       dimensions: ["listen", "alert", "report"],
       core: false,
       published: true,
@@ -224,6 +232,10 @@ export function createSeed(): Database {
       scene: "新门店要接入旁路分析。镜像口、许可、样本和采集口还没核对。",
       quote: "软件装上了但看不到流量。我不确定是镜像没接、许可没导，还是样本导错了。",
       summary: "按顺序完成镜像确认、许可、样本导入和采集口检查。",
+      reading: [
+        "新门店探针还没进生产。这门案卷练的是顺序：先证明镜像口里有流量，再怀疑软件。",
+        "样本只留在后续接入的第三方云桌面里，不能下载镜像。采集口为零时，回到镜像会话，不要先重装。",
+      ],
       dimensions: ["deploy", "report"],
       core: false,
       published: true,
@@ -302,6 +314,11 @@ export function createSeed(): Database {
       tags: ["证据具体", "边界清楚", "链路完整"],
       comment: "排除了带宽和数据库，盲区写在支付网关上。汇报还可以再短一点，但已经能当着客户讲。",
       defenseNote: "能回答为什么不扩带宽，也能说明网关数字不能编。",
+      defenseChecks: [
+        { question: "为什么不是数据库？", verdict: "clear" },
+        { question: "支付网关为什么不能写一个时延数字？", verdict: "clear" },
+        { question: "如果只能做一个动作，你先做哪个？", verdict: "clear" },
+      ],
       reason: "",
     },
   });
@@ -335,6 +352,11 @@ export function createSeed(): Database {
       tags: ["告警取舍得当", "证据具体"],
       comment: "黄金指标和关联关系都对，噪音也收干净了。",
       defenseNote: "能说明为什么 DNS 不单独开案。",
+      defenseChecks: [
+        { question: "如果只能先打一个电话，你打给谁？", verdict: "clear" },
+        { question: "为什么 DNS 不单独开案？", verdict: "clear" },
+        { question: "CPU 抖动为什么可以先放下？", verdict: "unclear" },
+      ],
       reason: "",
     },
   });
@@ -409,6 +431,7 @@ export function createSeed(): Database {
       tags: ["结论跳跃", "归咎带宽"],
       comment: "痛点还在，但结论跳过了样本里的时延。8ms 的交换机解释不了转圈。",
       defenseNote: "",
+      defenseChecks: [],
       reason: "用样本里的毫秒数重新选慢点，并补上哪一段其实没有镜像。先不要写扩容。",
     },
   });
@@ -479,6 +502,14 @@ export function createSeed(): Database {
         studentIds: ["stu-xu", "stu-shen", "stu-jiang", "stu-gu", "stu-liang"],
         requiredChallengeIds: ["trade-slow"],
         optionalChallengeIds: ["alert-flood", "deploy-probe"],
+        notices: [
+          {
+            id: "note-1",
+            at: "2026-11-10T01:00:00.000Z",
+            authorId: "teacher-chen",
+            body: "本周先收收银台案卷。被退回的同学先改慢点和采集盲区，不要先写扩容。告警洪峰可以并行，但不要八条都开成深查。",
+          },
+        ],
       },
     ],
     jobs: [
@@ -490,6 +521,7 @@ export function createSeed(): Database {
         companyTypes: ["科来及同业技术服务团队", "行业运维服务商", "集成商交付团队"],
         dimensions: ["deploy", "fault", "report"],
         skills: ["镜像与采集口排查", "时延证据", "复盘写作"],
+        trains: ["trade-slow", "deploy-probe"],
       },
       {
         id: "job-analysis",
@@ -499,6 +531,7 @@ export function createSeed(): Database {
         companyTypes: ["网络安全分析团队", "可观测性产品团队", "金融与运营商 SOC"],
         dimensions: ["topology", "fault", "alert"],
         skills: ["链路边界", "告警降噪", "证据链"],
+        trains: ["trade-slow", "alert-flood"],
       },
       {
         id: "job-presales",
@@ -508,6 +541,7 @@ export function createSeed(): Database {
         companyTypes: ["科来及同业售前", "解决方案团队", "行业方案商"],
         dimensions: ["listen", "topology", "report"],
         skills: ["需求翻译", "范围边界", "PoC 叙事"],
+        trains: ["trade-slow"],
       },
       {
         id: "job-ops",
@@ -517,6 +551,7 @@ export function createSeed(): Database {
         companyTypes: ["企业运维", "云网可观测团队", "分支机构网络运维"],
         dimensions: ["deploy", "fault", "alert"],
         skills: ["环境基线", "故障定位", "告警取舍"],
+        trains: ["alert-flood", "deploy-probe"],
       },
     ],
     challenges,
@@ -542,12 +577,13 @@ export function createSeed(): Database {
     releases: [
       { id: "rel-1", at: "2026-03-01T02:00:00.000Z", title: "岗位风向 2026.1", body: "更新四类岗位的技能要求和六维对应关系。" },
       { id: "rel-2", at: "2026-03-12T02:00:00.000Z", title: "挑战包 2026.1", body: "发布收银台时延、告警洪峰、新站点探针三门案卷。" },
-      { id: "rel-3", at: "2026-04-02T02:00:00.000Z", title: "云桌面 教学沙箱 2026.1", body: "RAS 回溯分析教学环境更新脱敏样本，仍禁止镜像下载。" },
+      { id: "rel-3", at: "2026-04-02T02:00:00.000Z", title: "云桌面接入说明 2026.1", body: "在线虚拟机交给后续第三方桌面。平台只记录机时额度和预约，不在站内运行桌面，也不提供镜像下载。" },
     ],
     desktop: {
       product: "科来 RAS 回溯分析",
       version: "教学沙箱 2026.1",
-      policy: "只在平台云端运行。不提供虚拟机镜像下载，样本不能拷出桌面。",
+      provider: "待接入第三方在线桌面",
+      policy: "在线虚拟机不在本平台里运行。这里只预留学校机时。镜像不能下载，样本也不能拷出。",
     },
   };
 }

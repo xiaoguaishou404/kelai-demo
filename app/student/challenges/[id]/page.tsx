@@ -25,6 +25,10 @@ export default async function ChallengePage({ params }: { params: Promise<{ id: 
   return (
     <>
       <PageHead kicker={row.challenge.code} title={row.challenge.title} lede={row.challenge.scene} />
+      <section className="dossier">
+        <p className="kicker">开卷阅读</p>
+        {(row.challenge.reading ?? []).map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
+      </section>
       {submission?.status === "returned" && submission.review ? (
         <div className="banner banner-return">
           <b>教师退回了这份成果。</b>

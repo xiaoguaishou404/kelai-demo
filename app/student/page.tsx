@@ -1,6 +1,6 @@
 import { Metric, PageHead, StatusPill } from "@/components/bits";
 import { Radar } from "@/components/radar";
-import { DIMENSIONS } from "@/lib/labels";
+import { DIMENSIONS, formatWhen } from "@/lib/labels";
 import { requireRole } from "@/lib/session";
 import { readDb } from "@/lib/store";
 import { studentHome } from "@/lib/view";
@@ -17,6 +17,21 @@ export default async function StudentHome() {
         title={`${user.name}，先看下一份该交的成果`}
         lede="挑战按目标问题组织，不按课时。通过验收就可以进入下一块。云桌面只记你自己的机时。"
       />
+      {data.notices.length > 0 ? (
+        <section className="notice">
+          <b>班级通知</b>
+          {data.notices.map((notice) => (
+            <p key={notice.id}><span className="muted">{formatWhen(notice.at, false)} · </span>{notice.body}</p>
+          ))}
+        </section>
+      ) : null}
+      {data.next ? (
+        <a className="hero" href={`/student/challenges/${data.next.challenge.id}`}>
+          <span className="kicker">下一份该处理的案卷</span>
+          <strong>{data.next.challenge.title}</strong>
+          <span>{data.next.challenge.summary}</span>
+        </a>
+      ) : null}
       <div className="grid grid-3">
         <Metric value={data.place ? `${data.place}/${data.total}` : "—"} label="班级进度名次" />
         <Metric value={`${data.minutes} 分钟`} label="已结算云桌面机时" />

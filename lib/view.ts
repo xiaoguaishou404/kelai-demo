@@ -38,6 +38,7 @@ export function studentHome(db: Database, studentId: string) {
     badges: badgesFor(db, studentId).filter((badge) => badge.earned),
     place,
     total: rank.length,
+    notices: room?.notices ?? [],
     active: db.sessions.find((session) => session.studentId === studentId && session.status === "active") ?? null,
   };
 }
@@ -54,10 +55,13 @@ export function portraitOf(db: Database, studentId: string) {
     tenant,
     room,
     scores,
-    fit: jobFit(db, studentId).map((item) => ({
-      job: db.jobs.find((job) => job.id === item.jobId)!,
-      score: item.score,
-    })),
+    fit: jobFit(db, studentId).map((item) => {
+      const job = db.jobs.find((entry) => entry.id === item.jobId)!;
+      const gaps = job.dimensions
+        .map((dimension) => ({ dimension, score: scores[dimension] ?? 0 }))
+        .filter((entry) => entry.score < 70);
+      return { job, score: item.score, gaps };
+    }),
     badges: badgesFor(db, studentId),
     sessions: db.sessions
       .filter((session) => session.studentId === studentId)
@@ -93,17 +97,27 @@ export function classTable(db: Database, classId: string) {
   return { room, teacher, challenges, students };
 }
 
-export function teacherQueue(db: Database, teacherId: string) {
+export function teacherArchive(db: Database, teacherId: string, status: SubmissionStatus | "all" = "submitted") {
   const rooms = db.classes.filter((room) => room.teacherId === teacherId);
   const studentIds = new Set(rooms.flatMap((room) => room.studentIds));
-  return db.submissions
-    .filter((submission) => studentIds.has(submission.studentId) && submission.status === "submitted")
+  const items = db.submissions
+    .filter((submission) => studentIds.has(submission.studentId))
     .map((submission) => ({
       submission,
       student: db.users.find((user) => user.id === submission.studentId),
       challenge: db.challenges.find((challenge) => challenge.id === submission.challengeId),
     }))
-    .sort((a, b) => a.submission.updatedAt.localeCompare(b.submission.updatedAt));
+    .sort((a, b) => b.submission.updatedAt.localeCompare(a.submission.updatedAt));
+  const counts = {
+    submitted: items.filter((item) => item.submission.status === "submitted").length,
+    returned: items.filter((item) => item.submission.status === "returned").length,
+    accepted: items.filter((item) => item.submission.status === "accepted").length,
+    draft: items.filter((item) => item.submission.status === "draft").length,
+  };
+  return {
+    counts,
+    items: status === "all" ? items : items.filter((item) => item.submission.status === status),
+  };
 }
 
 export function leaderBoard(db: Database, tenantId: string) {
@@ -137,6 +151,7 @@ export function leaderBoard(db: Database, tenantId: string) {
       weakest: weakestDimension(averages),
       hotspot,
       desktopMinutes,
+      narrative: `通过率 ${slots ? Math.round((accepted / slots) * 100) : 0}%。均分最低的是${dimensionLabel(weakestDimension(averages))}，未开始的人按 0 计入，所以这块低通常是还没覆盖，不是已经考砸。退回卡点：${hotspot}。`,
       students: room.studentIds.map((studentId) => {
         const scores = dimensionScores(db, studentId);
         return {
@@ -192,7 +207,7 @@ export interface OpsBoard {
   trend: Database["trend"];
   releases: Database["releases"];
   desktop: Database["desktop"];
-  challenges: { id: string; code: string; title: string; published: boolean; core: boolean }[];
+  challenges: { id: string; code: string; title: string; summary: string; published: boolean; core: boolean }[];
 }
 
 export function opsBoard(db: Database): OpsBoard {
@@ -245,6 +260,7 @@ export function opsBoard(db: Database): OpsBoard {
       title: challenge.title,
       published: challenge.published,
       core: challenge.core,
+      summary: challenge.summary,
     })),
   };
 }

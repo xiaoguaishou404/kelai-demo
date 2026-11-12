@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { openExpert, saveWork, submitWork } from "@/lib/actions";
+import { clearInstall, openExpert, saveWork, submitWork } from "@/lib/actions";
 import type { StudentChallengeView } from "@/lib/logic";
 import { dimensionLabel } from "@/lib/labels";
 import type { SubmissionStatus, WorkDraft } from "@/lib/types";
@@ -40,10 +40,15 @@ export function ChallengeWorkspace({
     });
   }
 
-  const desktopKinds = view.stages.some((stage) => stage.kind === "fault" || stage.kind === "alert" || stage.kind === "install");
+  const needsDesk = view.stages.some((stage) => stage.kind === "fault" || stage.kind === "alert" || stage.kind === "install");
 
   return (
     <div className="stack">
+      <ol className="stage-rail">
+        {view.stages.map((stage, index) => (
+          <li key={stage.id}><span>{index + 1}</span>{stage.title}</li>
+        ))}
+      </ol>
       <div className="row">
         <StatusPill status={status === "none" ? "none" : status} />
         {stuckOpened ? <span className="pill">已查看专家范本</span> : null}
@@ -94,7 +99,7 @@ export function ChallengeWorkspace({
       ) : null}
       {error ? <p className="error">{error}</p> : null}
       <div className="row noprint">
-        {desktopKinds ? (
+        {needsDesk ? (
           <button
             className="btn ghost"
             type="button"
@@ -111,8 +116,11 @@ export function ChallengeWorkspace({
               });
             }}
           >
-            打开云桌面
+            预约云桌面机时
           </button>
+        ) : null}
+        {view.installSteps.length > 0 ? (
+          <button className="btn ghost" type="button" disabled={pending || readOnly} onClick={() => run(() => clearInstall(view.id))}>重做装机勾选</button>
         ) : null}
         <button className="btn ghost" type="button" disabled={pending || readOnly} onClick={() => run(() => saveWork(view.id, work))}>保存进度</button>
         <button className="btn" type="button" disabled={pending || readOnly} onClick={() => run(() => submitWork(view.id, work))}>提交验收</button>

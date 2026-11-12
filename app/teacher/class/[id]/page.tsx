@@ -1,5 +1,5 @@
 import { PageHead, StatusPill } from "@/components/bits";
-import { addStudent, setOptionalChallenge } from "@/lib/actions";
+import { addStudent, postNotice, setOptionalChallenge } from "@/lib/actions";
 import { findSubmission } from "@/lib/logic";
 import { requireRole } from "@/lib/session";
 import { readDb } from "@/lib/store";
@@ -25,6 +25,16 @@ export default async function ClassPage({
     <>
       <PageHead kicker={table.room.term} title={table.room.name} lede="必选案卷覆盖故障定位和汇报。其余挑战由你决定这个班做不做。" />
       {e === "name" ? <p className="error">姓名需要 2 到 20 个字。</p> : null}
+      {e === "notice" ? <p className="error">通知至少写 6 个字。</p> : null}
+      <section className="card">
+        <h2>班级通知</h2>
+        {(table.room.notices ?? []).map((notice) => <p key={notice.id}>{notice.body}</p>)}
+        <form action={postNotice} className="stack">
+          <input type="hidden" name="classId" value={table.room.id} />
+          <label className="field">写给这个班<textarea name="body" placeholder="例如本周先收哪门案卷、退回要改什么" /></label>
+          <button className="btn" type="submit">发给学生</button>
+        </form>
+      </section>
       <section className="card">
         <h2>进度</h2>
         <table>

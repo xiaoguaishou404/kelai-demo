@@ -1,5 +1,5 @@
 import { PageHead } from "@/components/bits";
-import { addRelease, setChallengePublished, updateDesktopVersion, updateTrend } from "@/lib/actions";
+import { addRelease, setChallengePublished, updateChallengeSummary, updateDesktopVersion, updateTrend } from "@/lib/actions";
 import { formatWhen } from "@/lib/labels";
 import { requireRole } from "@/lib/session";
 import { readDb } from "@/lib/store";
@@ -39,6 +39,13 @@ export default async function ContentPage({ searchParams }: { searchParams: Prom
             <input type="hidden" name="published" value={challenge.published ? "0" : "1"} />
             <span>{challenge.code} {challenge.title}{challenge.core ? " · 必选素材" : ""}</span>
             <button className="btn ghost" type="submit">{challenge.published ? "下架" : "发布"}</button>
+          </form>
+        ))}
+        {board.challenges.map((challenge) => (
+          <form key={`${challenge.id}-summary`} action={updateChallengeSummary} className="stack">
+            <input type="hidden" name="challengeId" value={challenge.id} />
+            <label className="field">{challenge.title}的学生简介<textarea name="summary" defaultValue={challenge.summary} /></label>
+            <button className="btn ghost" type="submit">更新简介</button>
           </form>
         ))}
       </section>

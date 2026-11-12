@@ -261,6 +261,7 @@ export async function reviewSubmission(input: {
   tags: string[];
   comment: string;
   defenseNote: string;
+  defenseChecks: { question: string; verdict: "clear" | "unclear" }[];
   reason: string;
 }): Promise<ActionResult> {
   const user = await getSessionUser();
@@ -278,6 +279,10 @@ export async function reviewSubmission(input: {
   }
   if (input.comment.trim().length < 6) return { ok: false, error: "写一句评语，学生才知道好在哪。" };
   if (input.decision === "return" && input.reason.trim().length < 6) return { ok: false, error: "退回时要写清改什么。" };
+  if (input.decision === "accept") {
+    const missing = challenge.teacher.defenseQuestions.filter((question) => !input.defenseChecks.some((item) => item.question === question && item.verdict));
+    if (missing.length > 0) return { ok: false, error: "通过前要给每道答辩问题勾选讲清了或没讲清。" };
+  }
   const review: Review = {
     at: new Date().toISOString(),
     reviewerId: user.id,
@@ -286,6 +291,7 @@ export async function reviewSubmission(input: {
     tags: input.tags,
     comment: input.comment.trim(),
     defenseNote: input.defenseNote.trim(),
+    defenseChecks: input.defenseChecks,
     reason: input.decision === "return" ? input.reason.trim() : "",
   };
   updateDb((draft) => {
@@ -410,6 +416,52 @@ export async function adjustQuota(formData: FormData) {
   });
   refresh();
   redirect("/ops/tenants");
+}
+
+export async function postNotice(formData: FormData) {
+  const user = await getSessionUser();
+  if (!user || user.role !== "teacher") redirect("/teacher");
+  const classId = String(formData.get("classId") || "");
+  const body = String(formData.get("body") || "").trim();
+  if (body.length < 6) redirect(`/teacher/class/${classId}?e=notice`);
+  updateDb((draft) => {
+    const room = draft.classes.find((item) => item.id === classId && item.teacherId === user.id);
+    if (!room) return;
+    room.notices.unshift({
+      id: `note-${Date.now()}`,
+      at: new Date().toISOString(),
+      authorId: user.id,
+      body,
+    });
+    room.notices = room.notices.slice(0, 8);
+  });
+  refresh();
+  redirect(`/teacher/class/${classId}`);
+}
+
+export async function updateChallengeSummary(formData: FormData) {
+  const user = await getSessionUser();
+  if (!user || user.role !== "ops") redirect("/ops");
+  const challengeId = String(formData.get("challengeId") || "");
+  const summary = String(formData.get("summary") || "").trim();
+  if (summary.length < 8) redirect("/ops/content?e=summary");
+  updateDb((draft) => {
+    const challenge = draft.challenges.find((item) => item.id === challengeId);
+    if (challenge) challenge.summary = summary;
+  });
+  refresh();
+  redirect("/ops/content");
+}
+
+export async function clearInstall(challengeId: string): Promise<ActionResult> {
+  const user = await getSessionUser();
+  if (!user || user.role !== "student") return { ok: false, error: "只有学生可以重做自己的装机步骤。" };
+  updateDb((draft) => {
+    const submission = findSubmission(draft, user.id, challengeId);
+    if (submission && editable(submission.status)) submission.work.installDone = [];
+  });
+  refresh();
+  return { ok: true };
 }
 
 export async function resetDemo() {

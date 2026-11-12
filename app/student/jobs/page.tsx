@@ -27,6 +27,12 @@ export default function JobsPage() {
               {job.dimensions.map((dimension) => <span key={dimension} className="pill">{dimensionLabel(dimension)}</span>)}
             </div>
             <p className="muted">当下技能：{job.skills.join("、")}</p>
+            <div className="row">
+              {job.trains.map((id) => {
+                const challenge = db.challenges.find((item) => item.id === id);
+                return challenge ? <a key={id} className="pill" href={`/student/challenges/${id}`}>{challenge.title}</a> : null;
+              })}
+            </div>
           </article>
         ))}
       </div>

@@ -41,6 +41,9 @@ export default async function PortraitPage() {
               <div className="row"><b>{item.job.name}</b><span>{item.score}</span></div>
               <div className="bar-track"><span className="bar-fill" style={{ width: `${item.score}%` }} /></div>
               <p className="muted">{item.job.dimensions.map((dimension) => dimensionLabel(dimension)).join("、")}</p>
+              {item.gaps.length > 0 ? (
+                <p>还差：{item.gaps.map((gap) => `${dimensionLabel(gap.dimension)} ${gap.score}`).join("、")}。低于 70 先不要对外说这块已经能独立做。</p>
+              ) : <p>这组能力块都到了 70 以上，可以拿来对照该岗位的职责，仍然不是录取结果。</p>}
             </div>
           ))}
           <p>班级进度第 {data.place || "—"} / {data.total}。云桌面累计 {data.minutes} 分钟。</p>
